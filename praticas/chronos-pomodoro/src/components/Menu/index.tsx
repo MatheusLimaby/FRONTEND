@@ -1,33 +1,40 @@
-import { HistoryIcon, HouseIcon, SettingsIcon, SunIcon } from 'lucide-react';
+import {
+  HistoryIcon,
+  HouseIcon,
+  MoonIcon,
+  SettingsIcon,
+  SunIcon,
+} from 'lucide-react';
 import styles from './styles.module.css';
 import { useState, useEffect } from 'react';
 
-// Tipagem restrita: O tema SÓ pode ser 'dark' ou 'light'
 type AvailableThemes = 'dark' | 'light';
 
 export function Menu() {
-  const [theme, setTheme] = useState<AvailableThemes>('dark');
+  // 1. Busca o valor inicial do localStorage
+  const [theme, setTheme] = useState<AvailableThemes>(() => {
+    const storageTheme = localStorage.getItem('theme');
+    return (storageTheme as AvailableThemes) || 'dark';
+  });
 
-  // A função de clique agora apenas muda o estado. Ponto.
+  // 2. Mapeamento de ícones (Evita ifs/ternários no JSX)
+  const nextThemeIcon = {
+    dark: <SunIcon />,
+    light: <MoonIcon />,
+  };
+
   function handleThemeChange(
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
   ) {
     event.preventDefault();
-
-    setTheme(prevTheme => {
-      return prevTheme === 'dark' ? 'light' : 'dark';
-    });
+    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
   }
 
-  // O Efeito Colateral que escuta o estado e reflete no HTML
+  // 3. Efeito colateral: Muda o HTML e salva no localStorage
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-
-    // Função de limpeza (apenas didática neste momento)
-    return () => {
-      console.log('Limpando efeito anterior...');
-    };
-  }, [theme]); // Array de dependências observando o 'theme'
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   return (
     <nav className={styles.menu}>
@@ -65,15 +72,9 @@ export function Menu() {
         title='Mudar Tema'
         onClick={handleThemeChange}
       >
-        <SunIcon />
+        {/* Renderiza o ícone dinamicamente baseado na chave atual */}
+        {nextThemeIcon[theme]}
       </a>
-      <a
-        className={styles.menuLink}
-        href='#'
-        aria-label='Mudar Tema'
-        title='Mudar Tema'
-        onClick={handleThemeChange}
-      ></a>
     </nav>
   );
 }
