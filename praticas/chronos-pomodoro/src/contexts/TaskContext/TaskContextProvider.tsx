@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useReducer } from 'react';
 import { initialTaskState } from './initialTaskState';
+import { taskReducer } from './taskReducer';
 import { TaskContext } from './TaskContext';
-
 
 type TaskContextProviderProps = {
   children: React.ReactNode;
 };
 
 export function TaskContextProvider({ children }: TaskContextProviderProps) {
-  const [state, setState] = useState(initialTaskState);
+  // A mágica acontece aqui: usamos o reducer que vamos criar a seguir
+  const [state, dispatch] = useReducer(taskReducer, initialTaskState);
 
-  // O "Espião": Executa o console.log toda vez que a variável 'state' for alterada
-  //useEffect(() => {
-  //  console.log('ESTADO ATUALIZADO:', state);
-  //}, [state]);
+  useEffect(() => {
+    console.log(state);
+  }, [state]);
 
   return (
-    <TaskContext.Provider value={{ state, setState }}>
-    {/*  {children}*/}
+    <TaskContext.Provider value={{ state, dispatch }}>
+      {children}
     </TaskContext.Provider>
   );
 }
