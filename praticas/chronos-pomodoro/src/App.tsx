@@ -4,7 +4,7 @@ import './styles/theme.css';
 import './styles/global.css';
 import { useState } from 'react';
 import type { TaskStateModel } from './models/TaskStateModel';
-import { TaskContextProvider } from './contexts/TaskContext';
+import { TaskContextProvider } from './contexts/TaskContext/TaskContextProvider';
 const initialState: TaskStateModel = {
   tasks: [],
   secondsRemaining: 0,
