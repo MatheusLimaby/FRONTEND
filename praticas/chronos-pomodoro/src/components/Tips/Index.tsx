@@ -1,4 +1,4 @@
-import { useTaskContext } from '../../contexts/TaskContext/TaskContext';
+import { useTaskContext } from '../../contexts/TaskContext/useTaskContext';
 import { getNextCycle } from '../../utils/getNextCycle';
 import { getNextCycleType } from '../../utils/getNextCycleType';
 
@@ -7,6 +7,7 @@ export function Tips() {
   const nextCycle = getNextCycle(state.currentCycle);
   const nextCyleType = getNextCycleType(nextCycle);
 
+  // Tips
   const tipsForWhenActiveTask = {
     workTime: <span>Foque por {state.config.workTime}min</span>,
     shortBreakTime: <span>Descanse por {state.config.shortBreakTime}min</span>,

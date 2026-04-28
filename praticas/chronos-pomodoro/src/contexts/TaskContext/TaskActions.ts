@@ -10,25 +10,21 @@ export const TaskActionTypes = {
   START_TASK: 'START_TASK',
   INTERRUPT_TASK: 'INTERRUPT_TASK',
   RESET_STATE: 'RESET_STATE',
+  COUNT_DOWN: 'COUNT_DOWN',
+  COMPLETE_TASK: 'COMPLETE_TASK',
 } as const;
 
-// Ações que OBRIGATORIAMENTE precisam receber dados (payload)
 export type TaskActionsWithPayload =
   | {
       type: typeof TaskActionTypes.START_TASK;
       payload: TaskModel;
     }
   | {
-      type: typeof TaskActionTypes.INTERRUPT_TASK;
-      payload: TaskModel;
+      type: typeof TaskActionTypes.COUNT_DOWN;
+      payload: { secondsRemaining: number };
     };
 
-// Ações que NÃO DEVEM receber dados extras
-export type TaskActionsWithoutPayload = {
-  type: typeof TaskActionTypes.RESET_STATE;
-};
-
-// Juntando tudo no modelo final que será exportado para o nosso Reducer
-export type TaskActionModel =
-  | TaskActionsWithPayload
-  | TaskActionsWithoutPayload;
+export type TaskActionsWithoutPayload =
+  | { type: typeof TaskActionTypes.RESET_STATE }
+  | { type: typeof TaskActionTypes.INTERRUPT_TASK }
+  | { type: typeof TaskActionTypes.COMPLETE_TASK };

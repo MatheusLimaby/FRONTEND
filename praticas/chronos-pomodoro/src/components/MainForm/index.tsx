@@ -7,15 +7,12 @@ import type { TaskModel } from '../../models/TaskModel';
 import { useTaskContext } from '../../contexts/TaskContext/useTaskContext';
 import { getNextCycle } from '../../utils/getNextCycle';
 import { getNextCycleType } from '../../utils/getNextCycleType';
-import { TaskActionTypes } from '../../contexts/TaskContext/TaskActions';
+import { TaskActionTypes } from '../../contexts/TaskContext/taskActions';
+import { Tips } from '../Tips';
 
 export function MainForm() {
   const { state, dispatch } = useTaskContext();
   const taskNameInput = useRef<HTMLInputElement>(null);
-
-  // ciclos
-  const nextCycle = getNextCycle(state.currentCycle);
-  const nextCyleType = getNextCycleType(nextCycle);
 
   function handleCreateNewTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,17 +26,20 @@ export function MainForm() {
       return;
     }
 
-    const newTask: TaskModel = {
-  id: Date.now().toString(),
-  name: taskName,
-  startDate: Date.now(),
-  completeDate: null,
-  interruptDate: null,
-  duration: state.config[nextCyleType],
-  type: nextCyleType,
-};
+    const nextCycle = getNextCycle(state.currentCycle);
+    const nextCyleType = getNextCycleType(nextCycle);
 
-    dispatch({ type: TaskActionTypes.START_TASK, payload: newTask });
+    const newTask: TaskModel = {
+      id: Date.now().toString(),
+      name: taskName,
+      startDate: Date.now(),
+      completeDate: null,
+      interruptDate: null,
+      duration: state.config[nextCyleType],
+      type: nextCyleType,
+    };
+
+    dispatch({ type: TaskActionTypes.START_TASK, payload: newTask });    
   }
 
   function handleInterruptTask() {
@@ -60,7 +60,7 @@ export function MainForm() {
       </div>
 
       <div className='formRow'>
-        <p>Próximo intervalo é de 25min</p>
+        <Tips />
       </div>
 
       {state.currentCycle > 0 && (
