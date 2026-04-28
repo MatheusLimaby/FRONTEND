@@ -7,17 +7,17 @@ import {
 } from 'lucide-react';
 import styles from './styles.module.css';
 import { useState, useEffect } from 'react';
+import { RouterLink } from '../RouterLink';
 
 type AvailableThemes = 'dark' | 'light';
 
 export function Menu() {
-  // 1. Busca o valor inicial do localStorage
   const [theme, setTheme] = useState<AvailableThemes>(() => {
-    const storageTheme = localStorage.getItem('theme');
-    return (storageTheme as AvailableThemes) || 'dark';
+    const storageTheme =
+      (localStorage.getItem('theme') as AvailableThemes) || 'dark';
+    return storageTheme;
   });
 
-  // 2. Mapeamento de ícones (Evita ifs/ternários no JSX)
   const nextThemeIcon = {
     dark: <SunIcon />,
     light: <MoonIcon />,
@@ -27,10 +27,13 @@ export function Menu() {
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
   ) {
     event.preventDefault();
-    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
+
+    setTheme(prevTheme => {
+      const nextTheme = prevTheme === 'dark' ? 'light' : 'dark';
+      return nextTheme;
+    });
   }
 
-  // 3. Efeito colateral: Muda o HTML e salva no localStorage
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -38,32 +41,32 @@ export function Menu() {
 
   return (
     <nav className={styles.menu}>
-      <a
+      <RouterLink
         className={styles.menuLink}
-        href='#'
+        href='/'
         aria-label='Ir para a Home'
         title='Ir para a Home'
       >
         <HouseIcon />
-      </a>
+      </RouterLink>
 
-      <a
+      <RouterLink
         className={styles.menuLink}
-        href='#'
+        href='/history/'
         aria-label='Ver Histórico'
         title='Ver Histórico'
       >
         <HistoryIcon />
-      </a>
+      </RouterLink>
 
-      <a
+      <RouterLink
         className={styles.menuLink}
-        href='#'
+        href='/settings/'
         aria-label='Configurações'
         title='Configurações'
       >
         <SettingsIcon />
-      </a>
+      </RouterLink>
 
       <a
         className={styles.menuLink}
@@ -72,7 +75,6 @@ export function Menu() {
         title='Mudar Tema'
         onClick={handleThemeChange}
       >
-        {/* Renderiza o ícone dinamicamente baseado na chave atual */}
         {nextThemeIcon[theme]}
       </a>
     </nav>
