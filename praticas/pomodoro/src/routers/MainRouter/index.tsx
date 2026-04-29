@@ -5,6 +5,9 @@ import { Home } from '../../pages/Home';
 import { useEffect } from 'react';
 import { History } from '../../pages/History';
 import { Settings } from '../../pages/Settings';
+import { ProtectedRoute } from '../../components/ProtectedRoute';
+import { PublicOnlyRoute } from '../../components/PublicOnlyRoute';
+import { Login } from '../../pages/Login';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -20,11 +23,15 @@ export function MainRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/history/" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path='/' element={<Home />} />
         <Route path='/history/' element={<History />} />
         <Route path='/settings/' element={<Settings />} />
         <Route path='/about-pomodoro/' element={<AboutPomodoro />} />
         <Route path='*' element={<NotFound />} />
+
       </Routes>
       <ScrollToTop />
     </BrowserRouter>
