@@ -1,82 +1,142 @@
-// pages/Login/index.tsx
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { DefaultInput } from '../../components/DefaultInput';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { showMessage } from '../../adapters/showMessage';
 import styles from './styles.module.css';
 
+type ViewMode = 'login' | 'signup' | 'recover';
+
 export function Login() {
   const navigate = useNavigate();
   const { login } = useAuthContext();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('login');
+  const [feedback, setFeedback] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const usernameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    usernameInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!feedback) return;
+
+    const timer = setTimeout(() => {
+      setFeedback('');
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!username.trim()) {
-      showMessage.warn('Informe o usuário');
+      const message = 'Informe o usuário.';
+      setFeedback(message);
+      showMessage.warn(message);
       return;
     }
 
     if (!password) {
-      showMessage.warn('Informe a senha');
+      const message = 'Informe a senha.';
+      setFeedback(message);
+      showMessage.warn(message);
       return;
     }
 
-    if (login(username, password)) {
+    setIsSubmitting(true);
+
+    const authenticated = login(username, password);
+
+    if (authenticated) {
+      const message = 'Login enviado com sucesso. Redirecionando...';
+      setFeedback(message);
       showMessage.success('Bem-vindo!');
       navigate('/home');
     } else {
-      showMessage.error('Usuário ou senha inválidos');
+      const message = 'Usuário ou senha inválidos.';
+      setFeedback(message);
+      showMessage.error(message);
+      setIsSubmitting(false);
     }
   }
 
-return (
-  <div className={styles.container}>
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <h1 className={styles.title}>Bem-vindo</h1>
-      <p className={styles.subtitle}>Faça login para continuar</p>
+  function handleShowSignup() {
+    setViewMode('signup');
+    setFeedback('Tela de cadastro (simulação).');
+    showMessage.info('Cadastro em breve');
+  }
 
-      <DefaultInput
-        id="login-user"
-        labelText="Usuário"
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+  function handleShowRecover() {
+    setViewMode('recover');
+    setFeedback('Tela de recuperação de senha (simulação).');
+    showMessage.info('Recuperação em breve');
+  }
 
-      <DefaultInput
-        id="login-pass"
-        labelText="Senha"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+  function handleBackToLogin() {
+    setViewMode('login');
+    setFeedback('Voltou para o login.');
+  }
 
-      <div className={styles.actions}>
-        <button type="submit" className={styles.submitButton}>
-          Entrar
-        </button>
+  return (
+    <div className={styles.container}>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <h1 className={styles.title}>Bem-vindo</h1>
+        <p className={styles.subtitle}>Faça login para continuar</p>
 
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={() => showMessage.info('Cadastro em breve')}
-        >
-          Cadastrar
-        </button>
+        {feedback && (
+          <p className={styles.feedback} role="status" aria-live="polite">
+            {feedback}
+          </p>
+        )}
 
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={() => showMessage.info('Recuperação em breve')}
-        >
-          Esqueci minha senha
-        </button>
-      </div>
-    </form>
-  </div>
-);
+        {viewMode === 'login' && (
+          <>
+            <DefaultInput
+              id="login-user"
+              labelText="Usuário"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              ref={usernameInputRef}
+            />
+
+            <DefaultInput
+              id="login-pass"
+              labelText="Senha"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+              {isSubmitting ? 'Entrando...' : 'Entrar'}
+            </button>
+          </>
+        )}
+
+        {viewMode !== 'login' && (
+          <button type="button" className={styles.submitButton} onClick={handleBackToLogin}>
+            Voltar para login
+          </button>
+        )}
+
+        <div className={styles.actions}>
+          <button type="button" className={styles.secondaryButton} onClick={handleShowSignup}>
+            Não tem conta? Cadastre-se
+          </button>
+
+          <button type="button" className={styles.secondaryButton} onClick={handleShowRecover}>
+            Esqueci minha senha
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 }

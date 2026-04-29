@@ -34,6 +34,14 @@
   color: var(--text-muted);
 }
 
+.feedback {
+  padding: 1rem;
+  border-radius: 0.8rem;
+  text-align: center;
+  color: var(--text-default);
+  background: var(--gray-700);
+}
+
 .actions {
   display: flex;
   flex-direction: column;
@@ -56,6 +64,11 @@
 
 .submitButton:hover {
   background: var(--primary-dark);
+}
+
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .secondaryButton {
