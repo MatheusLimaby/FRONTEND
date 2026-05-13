@@ -1,4 +1,3 @@
-// pages/Login/index.tsx
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { DefaultInput } from '../../components/DefaultInput';
@@ -6,77 +5,53 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { showMessage } from '../../adapters/showMessage';
 import styles from './styles.module.css';
 
+type Mode = 'login' | 'register' | 'forgot' | 'reset';
+
 export function Login() {
   const navigate = useNavigate();
-  const { login } = useAuthContext();
-  const [username, setUsername] = useState('');
+  const auth = useAuthContext();
+  const [mode, setMode] = useState<Mode>('login');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [resetToken, setResetToken] = useState('');
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    if (!username.trim()) {
-      showMessage.warn('Informe o usuário');
-      return;
-    }
-
-    if (!password) {
-      showMessage.warn('Informe a senha');
-      return;
-    }
-
-    if (login(username, password)) {
-      showMessage.success('Bem-vindo!');
-      navigate('/home');
-    } else {
-      showMessage.error('Usuário ou senha inválidos');
+    try {
+      if (mode === 'login') {
+        await auth.login(email, password);
+        showMessage.success('Login realizado com sucesso');
+        navigate('/home');
+      } else if (mode === 'register') {
+        await auth.register(name, email, password);
+        showMessage.success('Conta criada. Faça login.');
+        setMode('login');
+      } else if (mode === 'forgot') {
+        const token = await auth.forgotPassword(email);
+        showMessage.info(token ? `Token de laboratório: ${token}` : 'Se o e-mail existir, um token foi gerado.');
+        setMode('reset');
+      } else {
+        await auth.resetPassword(resetToken, password);
+        showMessage.success('Senha redefinida. Faça login.');
+        setMode('login');
+      }
+    } catch (error) {
+      showMessage.error(error instanceof Error ? error.message : 'Erro no fluxo de autenticação');
     }
   }
 
-return (
-  <div className={styles.container}>
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <h1 className={styles.title}>Bem-vindo</h1>
-      <p className={styles.subtitle}>Faça login para continuar</p>
-
-      <DefaultInput
-        id="login-user"
-        labelText="Usuário"
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-
-      <DefaultInput
-        id="login-pass"
-        labelText="Senha"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <div className={styles.actions}>
-        <button type="submit" className={styles.submitButton}>
-          Entrar
-        </button>
-
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={() => showMessage.info('Cadastro em breve')}
-        >
-          Cadastrar
-        </button>
-
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={() => showMessage.info('Recuperação em breve')}
-        >
-          Esqueci minha senha
-        </button>
-      </div>
-    </form>
-  </div>
-);
+  return (<div className={styles.container}><form onSubmit={handleSubmit} className={styles.form}>
+    <h1 className={styles.title}>Chronos Login</h1>
+    {mode === 'register' && <DefaultInput id='name' labelText='Nome' type='text' value={name} onChange={(e) => setName(e.target.value)} />}
+    {(mode === 'login' || mode === 'register' || mode === 'forgot') && <DefaultInput id='email' labelText='E-mail' type='email' value={email} onChange={(e) => setEmail(e.target.value)} />}
+    {mode === 'reset' && <DefaultInput id='token' labelText='Token de recuperação' type='text' value={resetToken} onChange={(e) => setResetToken(e.target.value)} />}
+    {(mode === 'login' || mode === 'register' || mode === 'reset') && <DefaultInput id='pass' labelText={mode === 'reset' ? 'Nova senha' : 'Senha'} type='password' value={password} onChange={(e) => setPassword(e.target.value)} />}
+    <button type='submit' className={styles.submitButton}>Continuar</button>
+    <div className={styles.actions}>
+      <button type='button' className={styles.secondaryButton} onClick={() => setMode('login')}>Login</button>
+      <button type='button' className={styles.secondaryButton} onClick={() => setMode('register')}>Cadastrar</button>
+      <button type='button' className={styles.secondaryButton} onClick={() => setMode('forgot')}>Esqueci senha</button>
+    </div>
+  </form></div>);
 }

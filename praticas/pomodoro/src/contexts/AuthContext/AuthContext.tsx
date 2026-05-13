@@ -1,10 +1,14 @@
-// AuthContext.tsx - só tipos + createContext
 import { createContext } from 'react';
+import type { AuthUser } from '../../services/api';
 
 export type AuthContextValue = {
   isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
+  user: AuthUser | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<string | undefined>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

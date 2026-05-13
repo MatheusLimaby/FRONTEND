@@ -4,14 +4,17 @@ import {
   MoonIcon,
   SettingsIcon,
   SunIcon,
+  LogOutIcon,
 } from 'lucide-react';
 import styles from './styles.module.css';
 import { useState, useEffect } from 'react';
 import { RouterLink } from '../RouterLink';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 type AvailableThemes = 'dark' | 'light';
 
 export function Menu() {
+  const { logout } = useAuthContext();
   const [theme, setTheme] = useState<AvailableThemes>(() => {
     const storageTheme =
       (localStorage.getItem('theme') as AvailableThemes) || 'dark';
@@ -68,15 +71,8 @@ export function Menu() {
         <SettingsIcon />
       </RouterLink>
 
-      <a
-        className={styles.menuLink}
-        href='#'
-        aria-label='Mudar Tema'
-        title='Mudar Tema'
-        onClick={handleThemeChange}
-      >
-        {nextThemeIcon[theme]}
-      </a>
+      <a className={styles.menuLink} href='#' aria-label='Mudar Tema' title='Mudar Tema' onClick={handleThemeChange}>{nextThemeIcon[theme]}</a>
+      <a className={styles.menuLink} href='#' aria-label='Sair' title='Sair' onClick={(e) => { e.preventDefault(); logout(); }}><LogOutIcon /></a>
     </nav>
   );
 }

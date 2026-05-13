@@ -11,11 +11,7 @@ import { Login } from '../../pages/Login';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [pathname]);
-
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [pathname]);
   return null;
 }
 
@@ -23,15 +19,12 @@ export function MainRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
-        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/history/" element={<ProtectedRoute><History /></ProtectedRoute>} />
-        <Route path='/' element={<Home />} />
-        <Route path='/history/' element={<History />} />
-        <Route path='/settings/' element={<Settings />} />
-        <Route path='/about-pomodoro/' element={<AboutPomodoro />} />
+        <Route path='/' element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+        <Route path='/home' element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path='/history/' element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path='/settings/' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path='/about-pomodoro/' element={<ProtectedRoute><AboutPomodoro /></ProtectedRoute>} />
         <Route path='*' element={<NotFound />} />
-
       </Routes>
       <ScrollToTop />
     </BrowserRouter>

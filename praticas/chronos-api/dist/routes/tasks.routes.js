@@ -1,11 +1,24 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
+import { requireAuth } from '../middlewares/auth.middleware.js';
 export const tasksRouter = Router();
-tasksRouter.get('/', async (_req, res) => {
+tasksRouter.use(requireAuth);
+function serializeTask(task) {
+    if (!task)
+        return task;
+    return {
+        ...task,
+        startDate: task.startDate.toString(),
+        completeDate: task.completeDate?.toString() ?? null,
+        interruptDate: task.interruptDate?.toString() ?? null,
+    };
+}
+tasksRouter.get('/', async (req, res) => {
     const tasks = await prisma.task.findMany({
+        where: { userId: req.userId },
         orderBy: { startDate: 'desc' },
     });
-    return res.json(tasks);
+    return res.json(tasks.map(serializeTask));
 });
 tasksRouter.post('/', async (req, res) => {
     const { id, name, duration, type, startDate } = req.body;
@@ -13,35 +26,39 @@ tasksRouter.post('/', async (req, res) => {
         return res.status(400).json({ message: 'Payload inválido para criação de task' });
     }
     const task = await prisma.task.create({
-        data: { id, name, duration, type, startDate: BigInt(startDate) },
+        data: { id, name, duration, type, startDate: BigInt(startDate), userId: req.userId },
     });
-    return res.status(201).json(task);
+    return res.status(201).json(serializeTask(task));
 });
 tasksRouter.patch('/:id/complete', async (req, res) => {
     const { id } = req.params;
     const { completeDate } = req.body;
-    if (!Number.isInteger(completeDate)) {
+    if (!Number.isInteger(completeDate))
         return res.status(400).json({ message: 'completeDate inválido' });
-    }
-    const task = await prisma.task.update({
-        where: { id },
+    const task = await prisma.task.updateMany({
+        where: { id, userId: req.userId },
         data: { completeDate: BigInt(completeDate) },
     });
-    return res.json(task);
+    if (!task.count)
+        return res.status(404).json({ message: 'Task não encontrada' });
+    const updated = await prisma.task.findUnique({ where: { id } });
+    return res.json(serializeTask(updated));
 });
 tasksRouter.patch('/:id/interrupt', async (req, res) => {
     const { id } = req.params;
     const { interruptDate } = req.body;
-    if (!Number.isInteger(interruptDate)) {
+    if (!Number.isInteger(interruptDate))
         return res.status(400).json({ message: 'interruptDate inválido' });
-    }
-    const task = await prisma.task.update({
-        where: { id },
+    const task = await prisma.task.updateMany({
+        where: { id, userId: req.userId },
         data: { interruptDate: BigInt(interruptDate) },
     });
-    return res.json(task);
+    if (!task.count)
+        return res.status(404).json({ message: 'Task não encontrada' });
+    const updated = await prisma.task.findUnique({ where: { id } });
+    return res.json(serializeTask(updated));
 });
-tasksRouter.delete('/', async (_req, res) => {
-    await prisma.task.deleteMany();
+tasksRouter.delete('/', async (req, res) => {
+    await prisma.task.deleteMany({ where: { userId: req.userId } });
     return res.status(204).send();
 });

@@ -7,12 +7,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id             String              @id @default(cuid())
+  email          String              @unique
+  name           String?
+  passwordHash   String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  tasks          Task[]
+  settings       Settings?
+  sessions       Session[]
+  passwordResets PasswordResetToken[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 model Settings {
-  id             Int      @id @default(1)
+  id             String   @id @default(cuid())
   workTime       Int
   shortBreakTime Int
   longBreakTime  Int
   updatedAt      DateTime @updatedAt
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Task {
@@ -24,6 +62,9 @@ model Task {
   completeDate  BigInt?
   interruptDate BigInt?
   createdAt     DateTime @default(now())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([startDate])
+  @@index([userId])
 }
