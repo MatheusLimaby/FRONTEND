@@ -1,6 +1,7 @@
 import {
   HistoryIcon,
   HouseIcon,
+  LogOutIcon, // 1. Adicionado o ícone de logout correspondente
   MoonIcon,
   SettingsIcon,
   SunIcon,
@@ -8,6 +9,8 @@ import {
 import styles from './styles.module.css';
 import { useState, useEffect } from 'react';
 import { RouterLink } from '../RouterLink';
+import { useNavigate } from 'react-router';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 type AvailableThemes = 'dark' | 'light';
 
@@ -22,6 +25,8 @@ export function Menu() {
     dark: <SunIcon />,
     light: <MoonIcon />,
   };
+  const navigate = useNavigate();
+  const { logout } = useAuthContext();
 
   function handleThemeChange(
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
@@ -76,6 +81,20 @@ export function Menu() {
         onClick={handleThemeChange}
       >
         {nextThemeIcon[theme]}
+      </a>
+
+      <a
+        className={styles.menuLink}
+        href='#'
+        aria-label='Sair da conta'
+        title='Sair da conta'
+        onClick={e => {
+          e.preventDefault();
+          logout();
+          navigate('/');
+        }}
+      >
+        <LogOutIcon />
       </a>
     </nav>
   );

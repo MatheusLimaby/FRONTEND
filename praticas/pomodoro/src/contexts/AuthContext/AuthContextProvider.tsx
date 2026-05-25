@@ -1,32 +1,44 @@
-// AuthContextProvider.tsx - esqueleto
 import { useCallback, useMemo, useState } from 'react';
 import { AuthContext } from './AuthContext';
-import { validateMockLogin } from '../../utils/validateMockLogin';
+import { apiLogin } from '../../services/api';
 
-const STORAGE_KEY = 'chronos-auth';
+const STORAGE_KEY = 'chronos-auth-data';
+
+interface UserPayload {
+  name: string;
+  email: string;
+}
 
 export function AuthContextProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    () => sessionStorage.getItem(STORAGE_KEY) === '1',
-  );
+  const [authData, setAuthData] = useState<{ token: string; user: UserPayload } | null>(() => {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  });
 
-  const login = useCallback((username: string, password: string) => {
-    const ok = validateMockLogin(username, password);
-    if (ok) {
-      sessionStorage.setItem(STORAGE_KEY, '1');
-      setIsAuthenticated(true);
+  const isAuthenticated = useMemo(() => !!authData?.token, [authData]);
+  const userName = useMemo(() => authData?.user?.name || '', [authData]);
+
+  const login = useCallback(async (username: string, password: string) => {
+    try {
+      // Passando o email recebido no campo username do formulário
+      const data = await apiLogin({ email: username, password });
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      setAuthData(data);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
     }
-    return ok;
   }, []);
 
   const logout = useCallback(() => {
     sessionStorage.removeItem(STORAGE_KEY);
-    setIsAuthenticated(false);
+    setAuthData(null);
   }, []);
 
   const value = useMemo(
-    () => ({ isAuthenticated, login, logout }),
-    [isAuthenticated, login, logout],
+    () => ({ isAuthenticated, userName, login, logout }),
+    [isAuthenticated, userName, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
