@@ -64,30 +64,37 @@ authRouter.post("/login", async (req, res) => {
 authRouter.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
   if (!user) {
-    return res
-      .status(400)
-      .json({ message: "Se o e-mail existir, um token foi gerado." });
+    return res.status(400).json({
+      message: "Usuário não encontrado.",
+    });
   }
 
   const token = crypto.randomBytes(20).toString("hex");
+
   const expires = new Date();
-  expires.setHours(expires.getHours() + 1); // 1 hora de validade
+  expires.setHours(expires.getHours() + 1);
 
   await prisma.user.update({
     where: { email },
-    data: { resetToken: token, resetTokenExpires: expires },
+    data: {
+      resetToken: token,
+      resetTokenExpires: expires,
+    },
   });
 
-  // Simulação de envio de e-mail imprimindo no console do laboratório para o professor capturar
   console.log(`\n=== [LAB INTERNO] E-MAIL DE RECUPERAÇÃO DE SENHA ===`);
   console.log(`Para o usuário: ${email}`);
   console.log(`Token temporário gerado: ${token}`);
   console.log(`====================================================\n`);
 
   return res.json({
-    message: "Se o e-mail existir, um token foi gerado e enviado ao console.",
+    message: "Token gerado com sucesso.",
+    token,
   });
 });
 
