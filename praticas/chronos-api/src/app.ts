@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import { settingsRouter } from './routes/settings.routes.js';
 import { tasksRouter } from './routes/tasks.routes.js';
+import { authRouter } from './routes/auth.routes.js';
 
 export const app = express();
 
@@ -12,5 +13,6 @@ app.get('/health', (_req, res) => {
   return res.json({ ok: true });
 });
 
-app.use('/settings', settingsRouter);
+app.use('/auth', authRouter);
+app.use('/settings', settingsRouter); // Lembre-se de adicionar o authMiddleware em settings.routes.ts similarmente ao de tasks
 app.use('/tasks', tasksRouter);
